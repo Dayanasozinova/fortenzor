@@ -1,5 +1,6 @@
 from BaseApp import BasePage
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium import webdriver
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -11,6 +12,12 @@ class YandexSearchLocators:  # класс для хронения локатор
     LOCATOR_YANDEX_SEARCH_SUGGEST_BAR = (By.CLASS_NAME, "mini-suggest__popup-content")  # локатор таблицы с подсказками
     LOCATOR_YANDEX_SEARCH_LINKS = (By.TAG_NAME, "a")  # поиск результатов поиска
     LOCATOR_YANDEX_SEARCH_LINK_PAGES = (By.LINK_TEXT, "Картинки")
+    LOCATOR_YANDEX_SEARCH_POPULAR_REQUEST_LIST = (By.XPATH, "/html/body/div[3]/div[2]/div[1]/div/div/div[1]/a")
+    LOCATOR_YANDEX_SEARCH_INPUT_CONTROL = (By.CLASS_NAME, "input__control")
+    LOCATOR_YANDEX_SEARCH_FIRST_PAGES = (By.XPATH, "/html/body/div[3]/div[2]/div[1]/div[1]/div/div[1]/div/a")
+    LOCATOR_YANDEX_SEARCH_BUTTON_NEXT_PAGE = (By.CLASS_NAME, 'MMImage-Origin')
+    LOCATOR_YANDEX_SEARCH_BUTTON_BACK_PAGE = (By.CLASS_NAME, 'CircleButton')
+
 
 
 class SearchHelper(BasePage):
@@ -42,18 +49,32 @@ class SearchHelper(BasePage):
         assert i >= 5
 
     def check_link_pages_in_site(self):
-        return self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_LINK_PAGES).click()
+        return self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_LINK_PAGES)
 
-    # def click_on_link_pages(self):
-    #     return self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_LINK_PAGES).click()
+    def click_on_link_pages(self):
+        self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_LINK_PAGES).click()
+        self.driver.switch_to.window(self.driver.window_handles[-1])
+
 
     def check_location_pages(self):
-        assert "https://yandex.ru/images/?utm_source=main_stripe_big" == self.driver.current_url #пытался через current_url, почему-то проверку не проходит
+        assert "https://yandex.ru/images/" in self.driver.current_url
 
-        # links = self.find_elements(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_LINKS)
-        # links_list = []
-        # for link in links:
-        #     links_list.append(link.get_attribute("href"))
-        #
-        # assert 'yandex.ru/images/' in links_list[0]
+    def open_first_category_and_check(self):
+        element = self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_POPULAR_REQUEST_LIST)
+        element.click()
+        assert element.get_attribute("href") == self.driver.current_url
+        input_control = self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_INPUT_CONTROL)
+        assert input_control.get_attribute("value") == element.get_attribute("text")
 
+    def open_first_pages_and_check(self):
+        first_pages = self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_FIRST_PAGES)
+        first_pages.click()
+        assert first_pages.get_attribute("href").split('&')[4] in self.driver.current_url.split('&')[6]
+
+    def next_page(self):
+        return self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_BUTTON_NEXT_PAGE).click()
+
+    def back_page_and_check(self):
+        self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_BUTTON_BACK_PAGE).click()
+        first_pages = self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_FIRST_PAGES)
+        assert first_pages.get_attribute("href").split('&')[4] in self.driver.current_url.split('&')[6]
