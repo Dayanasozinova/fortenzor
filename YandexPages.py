@@ -36,7 +36,7 @@ class SearchHelper(BasePage):
     def check_suggest_bar(self):  # ищет элемент таблицы с подсказками
         return self.find_element(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_SUGGEST_BAR)
 
-    def check_link_in_table_result(self, link):
+    def check_link_in_table_result(self):
         links = self.find_elements(YandexSearchLocators.LOCATOR_YANDEX_SEARCH_LINKS)
         link_list = []
         i = 0
@@ -46,6 +46,7 @@ class SearchHelper(BasePage):
         for l in link_list:
             if 'tensor.ru' in l:
                 i += 1
+
         assert i >= 5
 
     def check_link_pages_in_site(self):
